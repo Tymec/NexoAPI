@@ -2,10 +2,11 @@ import socket
 from hashlib import md5
 import sys
 import logging
+from DeviceTypes import CategoryTypes, ElTypes
 
 
 class NexoVisionClient:
-    def __init__(self, ip, password, port=1024, timeout=2, silent_log=False, use_ussl=False):
+    def __init__(self, ip, password, port=1024, timeout=2, silent_log=False, use_ssl=False):
         self.setup()
 
         self.BUFFER_SIZE = 1024
@@ -14,11 +15,13 @@ class NexoVisionClient:
         self.ENCODING = 'Cp1250'
 
         self.sock = None
-        self.ussl = False
+        self.ssl = False
         self.silent_log = silent_log
-
+        
+        self.resources = {}
+        
         self.connect(ip, port, timeout)
-        self.setup_ussl(use_ussl)
+        self.setup_ssl(use_ssl)
         self.authorize(password)
         self.check_connection()
 
@@ -33,20 +36,21 @@ class NexoVisionClient:
 
     def disconnect(self):
         self.sock.close()
+        self.log("Client disconnected from the server", 'info')
 
-    def setup_ussl(self, use_ussl):
-        if use_ussl:
+    def setup_ssl(self, use_ssl):
+        if use_ssl:
             self.send(b"uSSL\n", prefix=False, suffix=False)
         else:
             self.send(b"plain\n", prefix=False)
 
         data = self.receive()
         if data == "uSSL OK":
-            self.ussl = True
+            self.ssl = True
             self.log("Using uSSL", 'info')
             return True
         elif data == "NO uSSL":
-            self.ussl = False
+            self.ssl = False
             self.log("Not using uSSL", 'warning')
             return False
         else:
@@ -129,52 +133,64 @@ class NexoVisionClient:
         return self.receive()
 
     def import_resources(self):
-        resources = {}
-        dev_type_list = [
-            "sensor",
-            "analogsensor",
-            "partition",
-            "partition24h",
-            "output",
-            "output_group",
-            "light",
-            "dimmer",
-            "light_group",
-            "analogoutput",
-            "analogoutput_group",
-            "rgbw",
-            "rgbw_group",
-            "blind",
-            "blind_group",
-            "thermometer",
-            "thermostat",
-            "gate",
-            "ventilator"
-        ]
-
-        for dev_type in dev_type_list:
-            iterator = 1
+        resources = {
+            "sensor": [],
+            "analogsensor": [],
+            "partition": [],
+            "partition24h": [],
+            "output": [],
+            "output_group": [],
+            "light": [],
+            "dimmer": [],
+            "light_group": [],
+            "analogoutput": [],
+            "analogoutput_group": [],
+            "rgbw": [],
+            "rgbw_group": [],
+            "blind": [],
+            "blind_group": [],
+            "thermometer": [],
+            "thermostat": [],
+            "gate": [],
+            "ventilator": []
+        }
+        self.log("Importing devices...", 'info')
+        for id, dev_type in enumerate(resources.keys()):
+            iterator = 0
             while True:
-                if iterator > 21:
+                if iterator > 10:
                     break
-                data = self.send_and_read(f"system T {dev_type} {iterator} ?")
-                if data == "CMD OK":
-                    resp = self.send_and_read("get")
-                    if resp == "~00000000:":
-                        continue
-                    elif resp.startswith("~00000000:~T"):
-                        print(resp)
+                #print(f"Device: {dev_type.capitalize()} - iteration: {iterator}", end='\r')
+                data = self.send_and_read(f"system T {id} {iterator} ?")
+                if data != "CMD OK":
+                    self.log("Something went wrong while importing devices: CMD WRONG", 'error')
+                    return
+                
+                resp = self.send_and_read("get")
+                split_resp = resp.split(' ')
+                
+                print(split_resp)
+                #if len(split_resp) == 3:
+                #    break
+                if len(split_resp) > 3:
+                    device_id = split_resp[3:]
+                    resources[dev_type].append(' '.join(device_id))
                 iterator += 1
-
+        # print(resources)
+        return resources
+    
     def switch(self, name, state):
         data = self.send_and_read(f"system C '{name}' {state}")
 
         if data == "CMD OK":
             resp = self.send_and_read("get")
-            if resp == "~00000000:":
-                self.log(f"Switched {name} to {'on' if state == '1' else 'off'}", "info")
-                return
-            self.log(f"Current state of {name} is {'on' if resp.split(' ')[1] == '65281' else 'off'}", "info")
+            try:
+                int(state)
+                if resp == "~00000000:":
+                    self.log(f"Switched {name} to {'on' if state == '1' else 'off'}", "info")
+                    return
+            except:
+                self.log(f"Response: {resp}", "warning")
 
     def logic(self, name, state):
         data = self.send_and_read(f"system L '{name}' {state}")
@@ -185,11 +201,9 @@ class NexoVisionClient:
             if resp == "~00000000:":
                 self.log(f"Switched {name} to {'on' if state == '1' else 'off'}", "info")
                 return
-            self.log(f"Current state of {name} is {'on' if resp.split(' ')[1] == '65281' else 'off'}", "info")
-
+            self.log(f"Current state of {name} is {resp.split(' ')[1]}", "info")
 
 if __name__ == "__main__":
-    nexo_client = NexoVisionClient('192.168.1.75', '1510', use_ussl=False)
-    nexo_client.logic('Rec.soverom 1', '?')
-    # nexo_client.import_resources()
+    nexo_client = NexoVisionClient('192.168.1.75', '1510')
+    nexo_client.import_resources()
     nexo_client.disconnect()
