@@ -6,27 +6,27 @@ from DeviceTypes import ImportTypes
 
 
 class NexoVisionClient:
-    def __init__(self, ip, password, port=1024, timeout=2, silent_log=False, use_ssl=False):
-        self.setup()
-
+    def __init__(self, ip, port=1024, timeout=2, silent_log=False, use_ssl=False):
         self.BUFFER_SIZE = 1024
         self.COMMAND_PREFIX = b'@00000000:'
         self.COMMAND_SUFFIX = b'\000'
         self.NULL_RESPONSE = '~00000000:'
         self.ENCODING = 'Cp1250'
-
+        
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+        
         self.sock = None
-        self.ssl = False
-        self.silent_log = silent_log
-                
-        self.connect(ip, port, timeout)
-        self.setup_ssl(use_ssl)
+        self.address = (ip, port)
+        self.timeout = timeout
+        self.ssl = use_ssl
+        self.silent_log = silent_log       
+
+    def initialize_connection(self, password):
+        '''Initialize the connection with the server and authenticate'''
+        self.connect(self.address[0], self.address[1], self.timeout)
+        self.setup_ssl(self.ssl)
         self.authorize(password)
         self.check_connection()
-
-    def setup(self):
-        '''Setup'''
-        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
     def connect(self, ip, port, timeout):
         '''Open a new socket connection with the server'''
@@ -190,8 +190,5 @@ class NexoVisionClient:
 
         if data == "CMD OK":
             resp = self.send_and_read("get")
-            print(resp)
-            if resp == self.NULL_RESPONSE:
-                self.log(f"Switched {name} to {'on' if state == '1' else 'off'}", "info")
-                return
-            self.log(f"Current state of {name} is {resp.split(' ')[1]}", "info")
+            return resp.split(' ')[-1]
+        return False

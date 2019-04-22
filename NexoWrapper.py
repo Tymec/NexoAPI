@@ -4,8 +4,11 @@ import ujson
 
 class NexoWrapper:
     def __init__(self, ip_address, password):
-        self.nexo_client = NexoVisionClient(ip_address, password)
+        self.nexo_client = NexoVisionClient(ip_address)
+        self.nexo_client.initialize_connection(password)
         self.nexo_client.clear_server_buffer_queue()
+        
+        self.resources = {}
         
     def get_state(self, name):
         state = self.nexo_client.system_c(name, '?')
@@ -19,26 +22,28 @@ class NexoWrapper:
         new_state = self.get_state(name)
         return new_state
 
-    def stress_test(self):
+    def scan_test(self, devices_to_scan):
         import time
         vifte = False
         i = 0
         start = time.time()
         while not vifte:
-            if i > 120:
+            if i > devices_to_scan:
                 break
             self.get_state('vifte bad')
             i += 1
-        print(f"Took {time.time() - start}")
+        self.nexo_client.log(f"Took {time.time() - start:.2} seconds to finish scanning", 'info')
+        return
 
-    def debug(self):
+    def import_resources_from_file(self):
         with open('resources.json', 'r') as f:
-            resources = ujson.load(f)
+            self.resources = ujson.load(f)
+        
+    def debug(self):
         state = self.get_state('GANG term')
         print(state)
         self.nexo_client.disconnect()
         
-        
 if __name__ == "__main__":
     nexo_wrapper = NexoWrapper('192.168.1.75', '1510')
-    nexo_wrapper.stress_test()
+    nexo_wrapper.debug()
