@@ -1,0 +1,16 @@
+Update 120 devices:
+    - 8.28 seconds
+Update 100 devices:
+    - 6.91 seconds
+Update 75 devices:
+    - 5.19 seconds
+Update 50 devices:
+    - 3.49 seconds
+Update 25 devices:
+    - 1.77 seconds
+Update 18 devices:
+    - 1.29 seconds
+Update 10 devices:
+    - 0.75 seconds
+Update 1 devices:
+    - 0.13 seconds

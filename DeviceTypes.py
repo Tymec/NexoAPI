@@ -46,3 +46,25 @@ class ElTypes(Enum):
     EL_TYPE_THERMOSTAT_GROUP = "thermostat_group"
     EL_TYPE_VENTILATOR = "ventilator"
     EL_TYPE_VIDEOPHONE = "videophone"
+
+class ImportTypes(Enum):
+    SENSOR = 1
+    ANALOGSENSOR = 2
+    PARTITION = 3
+    PARTITION24H = 4
+    OUTPUT = 5
+    OUTPUT_GROUP = 6
+    LIGHT = 7
+    DIMMER = 8
+    LIGHT_GROUP = 9
+    ANALOG_OUTPUT = 10
+    ANALOGOUTPUT_GROUP = 11
+    RGBW = 12
+    RGBW_GROUP = 13
+    BLIND = 14
+    BLIND_GROUP = 15
+    THERMOMETER = 16
+    THERMOSTAT = 17
+    THERMOSTAT_GROUP = 18
+    GATE = 257
+    VENTILATOR = 258

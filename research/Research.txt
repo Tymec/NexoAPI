@@ -1,5 +1,6 @@
 AnalogOutput: 
     - Actions: 1, 0, ""
+    - Returns: 0 - 101
     - States: 
         - 1: ON
         - 0: OFF
@@ -19,6 +20,7 @@ Blind:
         - system C '<ID>' <AutoInvertLastActionState>
 Dimmer: 
     - Actions: 65281, 0, ""
+    - Returns: 0 - 65281
     - States: 
         - 65281: ON
         - 0: OFF
@@ -36,6 +38,7 @@ Logic:
         - system logic <Action>
 Output: 
     - Actions: 1, 0
+    - Returns: 0 - 1
     - States: 
         - 1: ON/UP
         - 0: OFF/DOWN
@@ -45,6 +48,7 @@ Output:
         - system C '<ID>' <LastStateAction>
 Partition: 
     - Actions: 1, 0
+    - Returns: 0 - 1
     - States: 
         - 1: ARM
         - 0: DISARM
