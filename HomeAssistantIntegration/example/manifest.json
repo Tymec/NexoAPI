@@ -1,0 +1,10 @@
+{
+  "domain": "nexo_smart_home",
+  "name": "Nexo Smart Home",
+  "documentation": "https://github.com/Tymec/NexoAPI/blob/master/README.md",
+  "requirements": [
+    "ujson==1.35"
+  ],
+  "dependencies": ["configurator"],
+  "codeowners": ["@Tymec"]
+}
