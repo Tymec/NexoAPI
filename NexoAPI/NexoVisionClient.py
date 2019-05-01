@@ -6,7 +6,7 @@ from .DeviceTypes import ImportTypes
 
 
 class NexoVisionClient:
-    def __init__(self, ip, port=1024, timeout=2, silent_log=False, use_ssl=False):
+    def __init__(self, ip, port=1024, timeout=2, use_ssl=False):
         self.BUFFER_SIZE = 1024
         self.COMMAND_PREFIX = b'@00000000:'
         self.COMMAND_SUFFIX = b'\000'
@@ -18,8 +18,7 @@ class NexoVisionClient:
         self.sock = None
         self.address = (ip, port)
         self.timeout = timeout
-        self.ssl = use_ssl
-        self.silent_log = silent_log       
+        self.ssl = use_ssl 
 
     def initialize_connection(self, password):
         '''Initialize the connection with the server and authenticate'''
@@ -33,12 +32,12 @@ class NexoVisionClient:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((ip, port))
         self.sock.settimeout(timeout)
-        self.log(self.receive(), 'info')
+        logging.info(self.receive())
 
     def disconnect(self):
         '''Close the socket connection'''
         self.sock.close()
-        self.log("Client disconnected from the server", 'info')
+        logging.info("Client disconnected from the server")
 
     def setup_ssl(self, use_ssl):
         '''Setup a SSL connection or use plain connection'''
@@ -50,36 +49,19 @@ class NexoVisionClient:
         data = self.receive()
         if data == "uSSL OK":
             self.ssl = True
-            self.log("Using uSSL", 'info')
+            logging.info("Using uSSL")
             return True
         elif data == "NO uSSL":
             self.ssl = False
-            self.log("Not using uSSL", 'warning')
+            logging.info("Not using uSSL")
             return False
         else:
             return
 
-    def log(self, message, log_level):
-        '''Send log messages based on the log level'''
-        if self.silent_log:
-            return
-        if log_level == 'info':
-            logging.info(message)
-        elif log_level == 'warning':
-            logging.warning(message)
-        elif log_level == 'error':
-            logging.error(message)
-        elif log_level == 'critical':
-            logging.critical(message)
-        elif log_level == 'debug':
-            logging.debug(message)
-        else:
-            logging.info(message)
-
     def authorize(self, password):
         '''Authorize with the server using a password'''
         if not password:
-            self.log("No password specified", 'warning')
+            logging.warning("No password specified")
 
         pass_b = bytes(password, 'ISO-8859-1')
         m = md5(pass_b)
@@ -89,9 +71,9 @@ class NexoVisionClient:
         login_success = self.send_and_read(output, prefix=False, suffix=False)
 
         if login_success == 'LOGIN OK':
-            self.log("Login succeeded", 'info')
+            logging.info("Login succeeded")
         elif login_success == 'LOGIN FAILED':
-            self.log("Login failed", 'warning')
+            logging.error("Login failed")
 
     def send(self, cmd, prefix=True, suffix=True):
         '''Send a command via the socket connection'''
@@ -114,10 +96,12 @@ class NexoVisionClient:
                 return
             else:
                 print(e)
-                sys.exit(1)
+                print('error occurred')
+                return
         except socket.error as e:
             print(e)
-            sys.exit(1)
+            print('error occurred')
+            return
         else:
             if len(data) is 0:
                 print('message is empty')
@@ -130,10 +114,10 @@ class NexoVisionClient:
         '''Check if the connection with the server is still alive'''
         data = self.send_and_read("ping")
         if data == '~00000000:pong':
-            self.log("Connection is still active", 'info')
+            logging.info("Connection is still active")
             return True
         else:
-            self.log("Connection is not active", 'error')
+            logging.error("Connection is not active")
             return False
 
     def send_and_read(self, cmd, prefix=True, suffix=True):
@@ -144,13 +128,13 @@ class NexoVisionClient:
     def import_resources(self):
         '''Import all the existing resources from the server'''
         resources = {}
-        self.log("Importing resources", 'info')
+        logging.info("Importing resources")
         for device in ImportTypes:
             iterator = 0
             while True:
                 data = self.send_and_read(f"system T {device.value} {iterator} ?")
                 if data != "CMD OK":
-                    self.log("Something went wrong while importing devices: CMD WRONG", 'error')
+                    logging.error("Something went wrong while importing devices: CMD WRONG")
                     return
                 
                 resp = self.send_and_read("get")
@@ -165,16 +149,47 @@ class NexoVisionClient:
                         resources[device] = []
                     resources[device].append(' '.join(device_id))
                 iterator += 1
-        self.log("Finished importing resources", 'info')
+        logging.info("Finished importing resources")
         return resources
+    
+    def import_resource(self, resource):
+        '''Import specified resource from the server'''
+        devices = []
+        
+        if resource in [x.name for x in ImportTypes]:
+            resource = ImportTypes[resource]
+        else:
+            logging.info("No such resource")
+            return
+        
+        logging.info(f"Importing resource {resource}")
+        iterator = 0
+        while True:
+            data = self.send_and_read(f"system T {resource.value} {iterator} ?")
+            if data != "CMD OK":
+                logging.info("Something went wrong while importing devices: CMD WRONG")
+                return
+            
+            resp = self.send_and_read("get")
+            split_resp = resp.split(' ')
+            
+            if len(split_resp) == 3:
+                break
+            if len(split_resp) > 3:
+                device_id = split_resp[3:]
+                devices.append(' '.join(device_id))
+            iterator += 1
+            
+        logging.info(f"Finished importing resource {resource}")
+        return devices
     
     def clear_server_buffer_queue(self):
         '''Clear the server buffer queue on the server'''
-        self.log("Clearing the server-side buffer queue", 'info')
+        logging.info("Clearing the server-side buffer queue")
         while True:
             response = self.send_and_read("get")
             if response == self.NULL_RESPONSE:
-                self.log("Finished clearing the server-side buffer queue", 'info')
+                logging.info("Finished clearing the server-side buffer queue")
                 return True
     
     def system_c(self, name, state):

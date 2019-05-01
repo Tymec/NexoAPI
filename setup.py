@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="NexoAPI",
-    version="0.0.3",
+    version="0.1.1",
     author="Tymec",
     author_email="tymek11rt.yt@gmail.com",
     description="Unofficial Nexovision API",

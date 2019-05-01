@@ -15,7 +15,7 @@ class NexoWrapper:
      
     def get_state(self, name):
         state = self.nexo_client.system_c(name, '?')
-        return state
+        return int(state)
     
     def set_state(self, name, state):
         if state is not 1 and state is not 0:
@@ -37,12 +37,15 @@ class NexoWrapper:
             i += 1
         self.nexo_client.log(f"Took {time.time() - start:.2} seconds to finish scanning", 'info')
         return
-
+    
+    def import_resource(self, resource):
+        res = self.nexo_client.import_resource(resource)
+        return res
+        
+    def import_resources(self):
+        res = self.nexo_client.import_resources()
+        return res
+    
     def import_resources_from_file(self):
         with open('resources.json', 'r') as f:
             self.resources = ujson.load(f)
-        
-    def debug(self):
-        state = self.get_state('GANG term')
-        print(state)
-        self.disconnect()
