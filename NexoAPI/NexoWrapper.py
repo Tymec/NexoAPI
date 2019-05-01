@@ -10,6 +10,10 @@ class NexoWrapper:
         
         self.resources = {}
      
+    def check_connection(self):
+        alive = self.nexo_client.check_connection() 
+        return alive
+     
     def disconnect(self):
         self.nexo_client.disconnect()
      
