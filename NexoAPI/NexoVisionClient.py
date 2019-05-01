@@ -2,21 +2,18 @@ import socket
 from hashlib import md5
 import sys
 import logging
-from DeviceTypes import ImportTypes
+from .DeviceTypes import ImportTypes
 
 
 class NexoVisionClient:
-    def __init__(self, ip, port=1024, timeout=2, silent_log=False, use_ssl=False, custom_logger=None):
+    def __init__(self, ip, port=1024, timeout=2, silent_log=False, use_ssl=False):
         self.BUFFER_SIZE = 1024
         self.COMMAND_PREFIX = b'@00000000:'
         self.COMMAND_SUFFIX = b'\000'
         self.NULL_RESPONSE = '~00000000:'
         self.ENCODING = 'Cp1250'
         
-        self.logger = custom_logger
-        if not custom_logger:
-            logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
-            self.logger = logging.getLogger(__name__)
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
         
         self.sock = None
         self.address = (ip, port)
@@ -67,17 +64,17 @@ class NexoVisionClient:
         if self.silent_log:
             return
         if log_level == 'info':
-            self.logger.info(message)
+            logging.info(message)
         elif log_level == 'warning':
-            self.logger.warning(message)
+            logging.warning(message)
         elif log_level == 'error':
-            self.logger.error(message)
+            logging.error(message)
         elif log_level == 'critical':
-            self.logger.critical(message)
+            logging.critical(message)
         elif log_level == 'debug':
-            self.logger.debug(message)
+            logging.debug(message)
         else:
-            self.logger.info(message)
+            logging.info(message)
 
     def authorize(self, password):
         '''Authorize with the server using a password'''

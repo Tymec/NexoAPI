@@ -1,25 +1,18 @@
-from NexoVisionClient import NexoVisionClient
+from .NexoVisionClient import NexoVisionClient
 import ujson
 
 
 class NexoWrapper:
-    def __init__(self, ip_address, password, custom_logger=None):
-        self.nexo_client = NexoVisionClient(ip_address, custom_logger=custom_logger)
+    def __init__(self, ip_address, password):
+        self.nexo_client = NexoVisionClient(ip_address)
         self.nexo_client.initialize_connection(password)
         self.nexo_client.clear_server_buffer_queue()
         
         self.resources = {}
-        
-    def initialize_devices(self, tpe=None):
-        return
-        
-    def initialize_device(self, name):
-        device = NexoLight(name, self)
-        return device
-        
-    def check_connection(self):
-        return self.nexo_client.check_connection()
-        
+     
+    def disconnect(self):
+        self.nexo_client.disconnect()
+     
     def get_state(self, name):
         state = self.nexo_client.system_c(name, '?')
         return state
@@ -32,7 +25,7 @@ class NexoWrapper:
         new_state = self.get_state(name)
         return new_state
 
-    def _scan_test(self, devices_to_scan):
+    def scan_test(self, devices_to_scan):
         import time
         vifte = False
         i = 0
@@ -49,7 +42,7 @@ class NexoWrapper:
         with open('resources.json', 'r') as f:
             self.resources = ujson.load(f)
         
-    def _debug(self):
+    def debug(self):
         state = self.get_state('GANG term')
         print(state)
-        self.nexo_client.disconnect()
+        self.disconnect()
