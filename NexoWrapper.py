@@ -9,7 +9,10 @@ class NexoWrapper:
         self.nexo_client.clear_server_buffer_queue()
         
         self.resources = {}
-        
+     
+    def disconnect(self):
+        self.nexo_client.disconnect()
+     
     def get_state(self, name):
         state = self.nexo_client.system_c(name, '?')
         return state
@@ -42,8 +45,4 @@ class NexoWrapper:
     def debug(self):
         state = self.get_state('GANG term')
         print(state)
-        self.nexo_client.disconnect()
-        
-if __name__ == "__main__":
-    nexo_wrapper = NexoWrapper('192.168.1.75', '1510')
-    nexo_wrapper.debug()
+        self.disconnect()
