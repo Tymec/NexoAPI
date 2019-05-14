@@ -1,7 +1,6 @@
 from .NexoVisionClient import NexoVisionClient
-import ujson
+import ujson as json
 import asyncio
-
 
 class NexoWrapper:
     def __init__(self, host, password):

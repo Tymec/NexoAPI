@@ -35,6 +35,7 @@ class NexoVisionClient:
         '''Open a new socket connection with the server'''
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((ip, port))
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         self.sock.settimeout(timeout)
         logging.info(self.receive())
 
