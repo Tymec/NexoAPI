@@ -1,18 +1,27 @@
 from .NexoVisionClient import NexoVisionClient
 import ujson
+import asyncio
 
 
 class NexoWrapper:
-    def __init__(self, ip_address, password):
-        self.nexo_client = NexoVisionClient(ip_address)
+    def __init__(self, host, password):
+        self.password = password
+        
+        self.nexo_client = NexoVisionClient(host)
         self.nexo_client.initialize_connection(password)
         self.nexo_client.clear_server_buffer_queue()
-        
-        self.resources = {}
      
     def check_connection(self):
-        alive = self.nexo_client.check_connection() 
+        alive = self.nexo_client.check_connection()
         return alive
+     
+    async def process_queue(self, queue):
+        states = {}
+        
+        for item in queue:
+            states[item] = self.get_state(item)
+            
+        return states
      
     def disconnect(self):
         self.nexo_client.disconnect()
@@ -49,7 +58,3 @@ class NexoWrapper:
     def import_resources(self):
         res = self.nexo_client.import_resources()
         return res
-    
-    def import_resources_from_file(self):
-        with open('resources.json', 'r') as f:
-            self.resources = ujson.load(f)

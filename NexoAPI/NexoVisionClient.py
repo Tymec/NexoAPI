@@ -13,7 +13,9 @@ class NexoVisionClient:
         self.NULL_RESPONSE = '~00000000:'
         self.ENCODING = 'Cp1250'
         
-        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+        self.password = None
+        self.is_connected = False
+        self.initialized = False
         
         self.sock = None
         self.address = (ip, port)
@@ -25,7 +27,9 @@ class NexoVisionClient:
         self.connect(self.address[0], self.address[1], self.timeout)
         self.setup_ssl(self.ssl)
         self.authorize(password)
+        self.password = password
         self.check_connection()
+        self.initialized = True
 
     def connect(self, ip, port, timeout):
         '''Open a new socket connection with the server'''
@@ -90,35 +94,30 @@ class NexoVisionClient:
         try:
             data = self.sock.recv(self.BUFFER_SIZE)
         except socket.timeout as e:
-            err = e.args[0]
-            if err == 'timed out':
-                print('recv timed out, retry later')
-                return
-            else:
-                print(e)
-                print('error occurred')
-                return
+            logging.error("Timeout error: " + e)
+            return
         except socket.error as e:
-            print(e)
-            print('error occurred')
+            logging.error("Socket error: " + e)
             return
         else:
-            if len(data) is 0:
-                print('message is empty')
-                return
             if encoding:
                 data = data.decode(encoding)
             return data
 
     def check_connection(self):
         '''Check if the connection with the server is still alive'''
+        if not self.is_connected and self.initialized:
+            logging.info('Client is not connected')
+            self.initialize_connection(self.password)
+            self.is_connected = True
         data = self.send_and_read("ping")
         if data == '~00000000:pong':
             logging.info("Connection is still active")
-            return True
+            self.is_connected = True
         else:
             logging.error("Connection is not active")
-            return False
+            self.is_connected = False
+        return self.is_connected
 
     def send_and_read(self, cmd, prefix=True, suffix=True):
         '''Send a command and return the receive message'''
