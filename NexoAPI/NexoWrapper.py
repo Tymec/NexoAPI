@@ -24,6 +24,8 @@ class NexoWrapper:
      
     def get_state(self, name):
         state = self.nexo_client.system_c(name, '?')
+        if not state:
+            state = self.get_state(name)
         return int(state)
     
     def set_state(self, name, state):
@@ -33,19 +35,6 @@ class NexoWrapper:
         self.nexo_client.system_c(name, state)
         new_state = self.get_state(name)
         return new_state
-
-    def scan_test(self, devices_to_scan):
-        import time
-        vifte = False
-        i = 0
-        start = time.time()
-        while not vifte:
-            if i > devices_to_scan:
-                break
-            self.get_state('vifte bad')
-            i += 1
-        self.nexo_client.log(f"Took {time.time() - start:.2} seconds to finish scanning", 'info')
-        return
     
     def import_resource(self, resource):
         res = self.nexo_client.import_resource(resource)

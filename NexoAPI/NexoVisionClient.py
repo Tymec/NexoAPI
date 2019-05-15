@@ -15,8 +15,6 @@ class NexoVisionClient:
         
         self.password = None
         self.is_connected = False
-        self.initialized = False
-        
         self.sock = None
         self.address = (ip, port)
         self.timeout = timeout
@@ -29,13 +27,11 @@ class NexoVisionClient:
         self.authorize(password)
         self.password = password
         self.check_connection()
-        self.initialized = True
 
     def connect(self, ip, port, timeout):
         '''Open a new socket connection with the server'''
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((ip, port))
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         self.sock.settimeout(timeout)
         logging.info(self.receive())
 
@@ -95,11 +91,12 @@ class NexoVisionClient:
         try:
             data = self.sock.recv(self.BUFFER_SIZE)
         except socket.timeout as e:
-            logging.error("Timeout error: " + e)
-            return
+            logging.error("Socket timeout")
+            return None
         except socket.error as e:
-            logging.error("Socket error: " + e)
-            return
+            logging.error("Socket error")
+            self.initialize_connection(self.password)
+            return self.check_connection()
         else:
             if encoding:
                 data = data.decode(encoding)
@@ -107,10 +104,6 @@ class NexoVisionClient:
 
     def check_connection(self):
         '''Check if the connection with the server is still alive'''
-        if not self.is_connected and self.initialized:
-            logging.info('Client is not connected')
-            self.initialize_connection(self.password)
-            self.is_connected = True
         data = self.send_and_read("ping")
         if data == '~00000000:pong':
             logging.info("Connection is still active")
