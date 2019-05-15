@@ -1,11 +1,8 @@
 from .NexoVisionClient import NexoVisionClient
 import ujson as json
-import asyncio
 
 class NexoWrapper:
     def __init__(self, host, password):
-        self.password = password
-        
         self.nexo_client = NexoVisionClient(host)
         self.nexo_client.initialize_connection(password)
         self.nexo_client.clear_server_buffer_queue()
@@ -14,7 +11,7 @@ class NexoWrapper:
         alive = self.nexo_client.check_connection()
         return alive
      
-    async def process_queue(self, queue):
+    def process_queue(self, queue):
         states = {}
         
         for item in queue:
