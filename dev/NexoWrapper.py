@@ -1,6 +1,9 @@
-from .NexoVisionClient import NexoVisionClient
+from NexoVisionClient import NexoVisionClient
 import ujson as json
 import asyncio
+from threading import Thread
+import time
+import sys
 
 
 class NexoWrapper:
@@ -10,15 +13,17 @@ class NexoWrapper:
         self.nexo_client.clear_server_buffer_queue()
         
         self.loop = asyncio.get_event_loop()
-        cors = asyncio.wait([self.check_connection()])
-        self.loop.run_until_complete(cors)
+        self.t = Thread(target=self.start_loop, args=(self.loop,))
+        self.t.start()
+        
+    def start_loop(self, loop):
+        asyncio.set_event_loop(loop)
+        loop.run_forever()
         
     async def check_connection(self):
-        while True:
-            await asyncio.sleep(1)
-            alive = self.nexo_client.check_connection()
-            print(alive)
-            # return alive
+        await asyncio.sleep(1)
+        alive = self.nexo_client.check_connection()
+        # return alive
      
     def process_queue(self, queue):
         states = {}
@@ -52,3 +57,13 @@ class NexoWrapper:
     def import_resources(self):
         res = self.nexo_client.import_resources()
         return res
+
+if __name__ == "__main__":
+    try:
+        nex = NexoWrapper('192.168.1.75', '1510')
+        for i in range(1000):
+            time.sleep(1)
+            print(nex.get_state('l.gang'))
+    except KeyboardInterrupt:
+        nex.loop.call_soon_threadsafe(nex.loop.stop)
+        sys.exit()
