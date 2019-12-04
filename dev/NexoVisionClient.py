@@ -7,7 +7,8 @@ from DeviceTypes import ImportTypes
 
 class NexoVisionClient:
     def __init__(self, ip, port=1024, timeout=2, use_ssl=False):
-        self.BUFFER_SIZE = 1024
+        #self.BUFFER_SIZE = 1024
+        self.BUFFER_SIZE = 16384
         self.COMMAND_PREFIX = b'@00000000:'
         self.COMMAND_SUFFIX = b'\000'
         self.NULL_RESPONSE = '~00000000:'
