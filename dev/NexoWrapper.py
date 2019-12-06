@@ -13,17 +13,15 @@ class NexoWrapper:
         self.check_connection()
         
     def check_connection(self):
-        Timer(2.0, self.check_connection).start()
         alive = self.nexo_client.check_connection()
-        print(alive)
-        # return alive
+        # Timer(2.0, self.check_connection).start()
+        # print(alive)
+        return alive
      
     def process_queue(self, queue):
         states = {}
-        
         for item in queue:
             states[item] = self.get_state(item)
-            
         return states
      
     def disconnect(self):
@@ -37,7 +35,6 @@ class NexoWrapper:
     
     def set_state(self, name, state):
         if state is not 1 and state is not 0:
-            self.nexo_client.log("Wrong value", 'error')
             return
         self.nexo_client.system_c(name, state)
         new_state = self.get_state(name)
@@ -53,6 +50,6 @@ class NexoWrapper:
 
 if __name__ == "__main__":
     nex = NexoWrapper('192.168.1.75', '1510')
-    for i in range(1000):
-        time.sleep(60)
-        print(nex.get_state('l.gang'))
+    for x in range(100):
+        i = input()
+        nex.set_state('l.gang', int(i))
