@@ -51,5 +51,5 @@ class NexoWrapper:
 if __name__ == "__main__":
     nex = NexoWrapper('192.168.1.75', '1510')
     for x in range(100):
-        i = input()
-        nex.set_state('l.gang', int(i))
+        print(nex.get_state('l.gang'))
+        time.sleep(5)
