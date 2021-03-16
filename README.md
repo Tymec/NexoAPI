@@ -5,6 +5,11 @@ NexoAPI
 ===
 Unofficial API for controlling your home automation using Nexwell Nexo
 
+
+
+
+
+
 #### Usage
 ```py
 from pyNexo import NexoWrapper, ImportTypes
