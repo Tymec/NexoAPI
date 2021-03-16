@@ -221,3 +221,4 @@ dist
 .mypy_cache/
 secrets.py
 .env
+NexoProxy/
