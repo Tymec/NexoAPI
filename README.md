@@ -4,12 +4,10 @@ NexoAPI
 [![Requirements Status](https://requires.io/github/Tymec/NexoAPI/requirements.svg?branch=master)](https://requires.io/github/Tymec/NexoAPI/requirements/?branch=master)
 ===
 Unofficial API for controlling your home automation using Nexwell Nexo
-
-
-
-
-
-
+<br>
+<br>
+<br>
+<br>
 #### Usage
 ```py
 from pyNexo import NexoWrapper, ImportTypes
